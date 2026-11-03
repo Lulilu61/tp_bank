@@ -1,5 +1,7 @@
 import { Router } from 'express';
+import { getAuthUserId } from '../auth/current-user.ts';
 import { HttpError } from '../errors/http-error.ts';
+import { requireSelf } from '../middlewares/require-self.ts';
 import { validateObjectId } from '../middlewares/validate-object-id.ts';
 import { BankAccountModel } from '../models/bank-account.model.ts';
 import { UserModel } from '../models/user.model.ts';
@@ -9,11 +11,12 @@ export const usersRouter = Router();
 
 // Runs before every route containing :id
 usersRouter.param('id', validateObjectId);
+usersRouter.param('id', requireSelf);
 
-// GET /api/users
-usersRouter.get('/', async (_req, res) => {
-  const users = await UserModel.find();
-  res.status(200).json(users);
+// GET /api/users: only the logged-in user can be listed
+usersRouter.get('/', async (req, res) => {
+  const me = await UserModel.findById(getAuthUserId(req));
+  res.status(200).json(me ? [me] : []);
 });
 
 // GET /api/users/:id
