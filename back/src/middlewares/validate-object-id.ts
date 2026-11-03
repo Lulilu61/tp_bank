@@ -1,7 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { HttpError } from '../errors/http-error.ts';
-
-const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
+import { isObjectId } from '../validation/object-id.ts';
 
 export function validateObjectId(
   _req: Request,
@@ -9,7 +8,7 @@ export function validateObjectId(
   next: NextFunction,
   value: string,
 ): void {
-  if (!OBJECT_ID_REGEX.test(value)) {
+  if (!isObjectId(value)) {
     next(new HttpError(400, 'Invalid id'));
     return;
   }

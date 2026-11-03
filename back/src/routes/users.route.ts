@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { HttpError } from '../errors/http-error.ts';
 import { validateObjectId } from '../middlewares/validate-object-id.ts';
+import { BankAccountModel } from '../models/bank-account.model.ts';
 import { UserModel } from '../models/user.model.ts';
 import { parseCreateUser, parseUpdateUser } from '../validation/user.validation.ts';
 
@@ -24,6 +25,16 @@ usersRouter.get('/:id', async (req, res) => {
   res.status(200).json(user);
 });
 
+// GET /api/users/:id/accounts
+usersRouter.get('/:id/accounts', async (req, res) => {
+  const user = await UserModel.findById(req.params.id);
+  if (!user) {
+    throw new HttpError(404, 'User not found');
+  }
+  const accounts = await BankAccountModel.find({ userId: user._id });
+  res.status(200).json(accounts);
+});
+
 // POST /api/users
 usersRouter.post('/', async (req, res) => {
   const input = parseCreateUser(req.body);
@@ -45,10 +56,17 @@ usersRouter.patch('/:id', async (req, res) => {
 
 // DELETE /api/users/:id
 usersRouter.delete('/:id', async (req, res) => {
-  // Business rule 5 (user with accounts -> 409) will be added with the BankAccount model
-  const user = await UserModel.findByIdAndDelete(req.params.id);
+  const user = await UserModel.findById(req.params.id);
   if (!user) {
     throw new HttpError(404, 'User not found');
   }
+
+  // Rule : a user who still owns accounts cannot be deleted
+  const hasAccounts = await BankAccountModel.exists({ userId: user._id });
+  if (hasAccounts) {
+    throw new HttpError(409, 'User still has bank accounts');
+  }
+
+  await user.deleteOne();
   res.status(204).end();
 });
