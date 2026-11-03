@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express from 'express';
+import { docsRouter } from './doc.ts';
 import { errorHandler } from './middlewares/error-handler.ts';
 import { notFound } from './middlewares/not-found.ts';
 import { requireAuth } from './middlewares/require-auth.ts';
@@ -13,6 +14,7 @@ export const app = express();
 
 app.use(cors({ origin: 'http://localhost:4200' }));
 app.use(express.json());
+app.use('/api/docs', docsRouter);
 
 app.get('/api/health', (_req, res) => {
   res.status(200).json({ status: 'ok' });

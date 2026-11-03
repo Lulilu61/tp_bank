@@ -1,0 +1,949 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Boiling Isles Bank API",
+    "version": "1.0.0",
+    "description": "Banking API for the Boiling Isles: users and their bank accounts.\n\n**Money**: every amount is an integer number of cents (`balanceCents: 10000` = 100.00 Snails), so no floating point error can occur.\n\n**Authentication**: every `/api/users` and `/api/accounts` route requires a JWT sent as `Authorization: Bearer <token>`. Get a token with `POST /api/auth/login`, then click **Authorize**.\n\n**Ownership**: a user can only read and modify their own profile and their own accounts (403 otherwise).\n\n**Errors**: every error is returned as JSON `{ \"message\": \"...\" }`. Any route may also return 500 for an unexpected error, without internal details."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "API status"
+    },
+    {
+      "name": "Auth",
+      "description": "Registration and login"
+    },
+    {
+      "name": "Users",
+      "description": "User profiles"
+    },
+    {
+      "name": "Accounts",
+      "description": "Bank accounts"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "operationId": "getHealth",
+        "summary": "Check that the API is running",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "The API is running",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "register",
+        "summary": "Create a user with a password",
+        "description": "The password is hashed with bcrypt before being stored. It is never returned by the API.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "login",
+        "summary": "Log in and get a JWT",
+        "description": "Returns a token valid for 1 hour. An unknown email and a wrong password return the same 401 message, so the API never reveals whether an email exists.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "listUsers",
+        "summary": "List users",
+        "description": "Ownership rule: only the logged-in user is returned (an array with a single element).",
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "createUser",
+        "summary": "Create a user without a password",
+        "description": "Creates a profile that cannot log in (no password). Use `POST /api/auth/register` to create a user who can log in. 409 if the email is already used.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/UserId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "getUser",
+        "summary": "Read a user",
+        "description": "403 if the id is not the logged-in user's id.",
+        "responses": {
+          "200": {
+            "description": "The user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "updateUser",
+        "summary": "Partially update a user",
+        "description": "Only `firstName`, `lastName` and `email` can be modified; any other field returns 400. 409 if the new email is already used. 403 if the id is not the logged-in user's id.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "deleteUser",
+        "summary": "Delete a user",
+        "description": "Business rule: 409 if the user still owns bank accounts. 403 if the id is not the logged-in user's id.",
+        "responses": {
+          "204": {
+            "description": "User deleted"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/accounts": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/UserId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "listUserAccounts",
+        "summary": "List the accounts of a user",
+        "description": "404 if the user does not exist (unlike `GET /api/accounts?userId=`, which returns an empty array). 403 if the id is not the logged-in user's id.",
+        "responses": {
+          "200": {
+            "description": "The user's accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BankAccount"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/accounts": {
+      "get": {
+        "tags": [
+          "Accounts"
+        ],
+        "operationId": "listAccounts",
+        "summary": "List accounts",
+        "description": "Ownership rule: only the logged-in user's accounts are returned. Any query parameter other than `userId` and `type` returns 400. 403 if `userId` is another user's id.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "description": "Keep only the accounts of this user",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Keep only the accounts of this type",
+            "schema": {
+              "$ref": "#/components/schemas/AccountType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BankAccount"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Accounts"
+        ],
+        "operationId": "createAccount",
+        "summary": "Create an account",
+        "description": "Business rules: 400 if `userId` does not match an existing user; 400 if `balanceCents` is not an integer greater than or equal to 0; 409 if the IBAN is already used. 403 if `userId` is not the logged-in user's id.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAccountBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankAccount"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/api/accounts/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/AccountId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Accounts"
+        ],
+        "operationId": "getAccount",
+        "summary": "Read an account",
+        "description": "403 if the account belongs to another user.",
+        "responses": {
+          "200": {
+            "description": "The account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankAccount"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Accounts"
+        ],
+        "operationId": "updateAccount",
+        "summary": "Update the label and/or type of an account",
+        "description": "Business rule: only `label` and `type` can be modified. Any other field (`balanceCents`, `iban`, `userId`...) returns 400. 403 if the account belongs to another user.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAccountBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankAccount"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Accounts"
+        ],
+        "operationId": "deleteAccount",
+        "summary": "Delete an account",
+        "description": "Business rule: 409 if the balance is not zero. 403 if the account belongs to another user.",
+        "responses": {
+          "204": {
+            "description": "Account deleted"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Paste the token returned by POST /api/auth/login (without the word Bearer)."
+      }
+    },
+    "parameters": {
+      "UserId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "User id (24 hexadecimal characters). 400 if malformed.",
+        "schema": {
+          "$ref": "#/components/schemas/ObjectId"
+        }
+      },
+      "AccountId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Account id (24 hexadecimal characters). 400 if malformed.",
+        "schema": {
+          "$ref": "#/components/schemas/ObjectId"
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid body, field, id, filter or JSON",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "email is invalid"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Missing, invalid or expired token, or wrong credentials",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "Missing token"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "The resource belongs to another user",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "This account does not belong to you"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "User not found"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Duplicate value or deletion forbidden by a business rule",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "message": "email already used"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "User not found"
+          }
+        }
+      },
+      "Health": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          }
+        }
+      },
+      "ObjectId": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$",
+        "example": "6650f1c2a1b2c3d4e5f60718"
+      },
+      "AccountType": {
+        "type": "string",
+        "enum": [
+          "checking",
+          "savings"
+        ],
+        "description": "checking = current account, savings = savings account"
+      },
+      "User": {
+        "type": "object",
+        "required": [
+          "_id",
+          "firstName",
+          "lastName",
+          "email",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "_id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "Luz"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Noceda"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Unique, stored in lowercase",
+            "example": "luz.noceda@bonesborough.example"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateUserBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "firstName",
+          "lastName",
+          "email"
+        ],
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Amity"
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Blight"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "amity.blight@bonesborough.example"
+          }
+        }
+      },
+      "UpdateUserBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Durand"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+      },
+      "RegisterBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "password"
+        ],
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Luz"
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Noceda"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "luz.noceda@bonesborough.example"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8,
+            "example": "TitanTrapper2026"
+          }
+        }
+      },
+      "LoginBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "luz.noceda@bonesborough.example"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "TitanTrapper2026"
+          }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT valid for 1 hour"
+          }
+        }
+      },
+      "BankAccount": {
+        "type": "object",
+        "required": [
+          "_id",
+          "userId",
+          "iban",
+          "type",
+          "balanceCents",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "_id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "iban": {
+            "type": "string",
+            "example": "BI00BONESBOROUGH0001"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AccountType"
+          },
+          "label": {
+            "type": "string",
+            "example": "Main account"
+          },
+          "balanceCents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Balance in cents (10000 = 100.00 Snails)",
+            "example": 10000
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateAccountBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "userId",
+          "iban",
+          "type"
+        ],
+        "properties": {
+          "userId": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ],
+            "description": "Must be an existing user (400 otherwise). Cannot be modified later."
+          },
+          "iban": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}\\d{2}[A-Z0-9]{10,30}$",
+            "description": "Unique (409 if already used). Cannot be modified later.",
+            "example": "BI00BONESBOROUGH0001"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AccountType"
+          },
+          "label": {
+            "type": "string",
+            "example": "Main account"
+          },
+          "balanceCents": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+            "description": "Initial balance in cents, integer >= 0 (400 otherwise). Cannot be modified later.",
+            "example": 10000
+          }
+        }
+      },
+      "UpdateAccountBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "description": "Only label and type can be modified.",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "Savings for holidays"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AccountType"
+          }
+        }
+      }
+    }
+  }
+}
