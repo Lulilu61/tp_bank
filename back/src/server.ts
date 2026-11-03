@@ -1,12 +1,10 @@
 import mongoose from 'mongoose';
 import { app } from './app.ts';
+import { env } from './config/env.ts';
 
-const PORT = Number(process.env.PORT ?? 3000);
-const MONGO_URI = process.env.MONGO_URI ?? 'mongodb://localhost:27017/owl_bank';
-
-await mongoose.connect(MONGO_URI);
+await mongoose.connect(env.mongoUri);
 console.log('MongoDB connected');
 
-app.listen(PORT, () => {
-  console.log(`API listening on http://localhost:${PORT}`);
+app.listen(env.port, () => {
+  console.log(`API listening on http://localhost:${env.port}`);
 });
