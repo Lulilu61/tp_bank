@@ -1,0 +1,70 @@
+:root {
+  // 1. Palette: raw colors, never used directly in components
+  --palette-night-900: #2b1b3f;
+  --palette-night-700: #3d2a5c;
+  --palette-night-200: #cfc3e0;
+  --palette-gold-500: #d9a441;
+  --palette-gold-600: #c08e2e;
+   --palette-white: #ffffff;
+  --palette-mist-100: #f5f3f8;
+  --palette-mist-200: #eeeaf3;
+  --palette-mist-400: #dcd5e5;
+  --palette-ink-900: #2a2233;
+  --palette-ink-600: #6b5f73;
+  --palette-emerald-100: #dceee4;
+  --palette-emerald-600: #2f7d5b;
+  --palette-emerald-800: #1f5a40;
+  --palette-brick-100: #f7e1da;
+  --palette-brick-300: #e5b4a6;
+  --palette-brick-600: #b4442f;
+  --palette-brick-800: #8a3222;
+
+  // 2. Semantic colors: what components use
+  --color-bg: var(--palette-mist-100);
+  --color-surface: var(--palette-white);
+  --color-surface-hover: var(--palette-mist-100);
+  --color-border: var(--palette-mist-400);
+  --color-text: var(--palette-ink-900);
+  --color-text-muted: var(--palette-ink-600);
+  --color-brand: var(--palette-gold-500);
+  --color-brand-hover: var(--palette-gold-600);
+  --color-on-brand: var(--palette-night-900);
+  --color-primary: var(--palette-night-900);
+  --color-header-bg: var(--palette-night-900);
+  --color-header-text: var(--palette-white);
+  --color-header-muted: var(--palette-night-200);
+  --color-amount: var(--palette-emerald-600);
+  --color-success-bg: var(--palette-emerald-100);
+  --color-success-text: var(--palette-emerald-800);
+  --color-danger: var(--palette-brick-600);
+  --color-danger-bg: var(--palette-brick-100);
+  --color-danger-border: var(--palette-brick-300);
+  --color-danger-text: var(--palette-brick-800);
+
+  // 3. Typography
+  --font-display: 'Cinzel', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+
+  // 4. Spacing scale
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  // 5. Shapes and effects
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --shadow-card: 0 1px 3px rgb(43 27 63 / 0.08);
+  --focus-ring: 0 0 0 3px rgb(217 164 65 / 0.5);
+  --transition-fast: 150ms ease;
+}
