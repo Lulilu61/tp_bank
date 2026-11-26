@@ -1,8 +1,9 @@
 import { Types } from 'mongoose';
 import { HttpError } from '../errors/http-error.ts';
-import { parseBody, requiredString, optionalString, type JsonObject } from './body.ts';
-import { isObjectId } from './object-id.ts';
 import { ACCOUNT_TYPES, type AccountType } from '../models/bank-account.model.ts';
+import { optionalString, parseBody, requiredString, type JsonObject } from './body.ts';
+import { isIban } from './iban.ts';
+import { isObjectId } from './object-id.ts';
 
 export interface CreateAccountInput {
   userId: Types.ObjectId;
@@ -93,4 +94,18 @@ export function parseAccountFilter(query: unknown): AccountFilter {
     filter.type = parseAccountType(type);
   }
   return filter;
+}
+
+export interface LookupInput {
+  iban: string;
+}
+
+// GET /api/accounts/lookup?iban=...
+export function parseLookup(query: unknown): LookupInput {
+  const data = parseBody(query, ['iban']);
+  const iban = requiredString(data, 'iban').trim().toUpperCase();
+  if (!isIban(iban)) {
+    throw new HttpError(400, 'iban is not a valid IBAN');
+  }
+  return { iban };
 }

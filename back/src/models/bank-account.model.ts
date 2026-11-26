@@ -1,9 +1,8 @@
 import { Schema, model, type Types } from 'mongoose';
+import { IBAN_REGEX } from '../validation/iban.ts';
 
 export const ACCOUNT_TYPES = ['checking', 'savings'] as const;
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
-
-const IBAN_REGEX = /^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/;
 
 export interface BankAccount {
   userId: Types.ObjectId;

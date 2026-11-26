@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{baseUrl}}/api/accounts/lookup?iban=BI00BONESBOROUGH0002"
+method: GET
+queryParams:
+  iban: BI00BONESBOROUGH0002
+order: 21000

@@ -8,14 +8,35 @@ import type { BankAccount } from '../models/bank-account.model.ts';
 import { BankAccountModel } from '../models/bank-account.model.ts';
 import { UserModel } from '../models/user.model.ts';
 import {
-    parseAccountFilter,
-    parseCreateAccount,
-    parseUpdateAccount,
+  parseAccountFilter,
+  parseCreateAccount,
+  parseLookup,
+  parseUpdateAccount,
 } from '../validation/bank-account.validation.ts';
 
 export const accountsRouter = Router();
 
 accountsRouter.param('id', validateObjectId);
+
+// GET /api/accounts/lookup?iban=...
+accountsRouter.get('/lookup', async (req, res) => {
+  const { iban } = parseLookup(req.query);
+
+  const account = await BankAccountModel.findOne({ iban }).select('userId');
+  if (!account) {
+    throw new HttpError(404, 'No account found for this IBAN');
+  }
+
+  const holder = await UserModel.findById(account.userId).select('firstName lastName');
+  if (!holder) {
+    throw new HttpError(404, 'No account found for this IBAN');
+  }
+
+  // Privacy: first name and initial of the last name only
+  res.status(200).json({
+    holderName: `${holder.firstName} ${holder.lastName.charAt(0).toUpperCase()}.`,
+  });
+});
 
 function assertAccountOwner(account: Pick<BankAccount, 'userId'>, req: Request): void {
   if (account.userId.toString() !== getAuthUserId(req)) {
