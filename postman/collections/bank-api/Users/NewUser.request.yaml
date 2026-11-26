@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/api/users"
+method: POST
+body:
+  type: json
+  content: "{ \r
+
+    \    \"firstName\": \"Amity\", \r
+
+    \    \"lastName\": \"Blight\", \r
+
+    \    \"email\": \"amity.blight@bonesborough.example\" \r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "if (pm.response.code === 201) {\r
+
+      \  pm.collectionVariables.set('userId', pm.response.json()._id);\r
+
+      }"
+    language: text/javascript
+settings: {}
+order: 1000

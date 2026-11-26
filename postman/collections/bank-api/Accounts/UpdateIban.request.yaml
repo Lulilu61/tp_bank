@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{baseUrl}}/api/accounts/{{accountId}}"
+method: PATCH
+body:
+  type: json
+  content: '{ "iban": "FR0000000000000000000000000" }'
+settings: {}
+order: 18000

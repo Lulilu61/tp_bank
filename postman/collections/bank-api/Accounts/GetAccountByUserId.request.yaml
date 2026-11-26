@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/api/accounts?userId={{userId}}"
+method: GET
+queryParams:
+  - key: userId
+    value: "{{userId}}"
+    $type: |-
+      {
+        "type": "",
+        "format": "",
+        "required": false,
+        "deprecated": false,
+        "default": "",
+        "enum": [],
+        "pattern": "",
+        "minLength": "",
+        "maxLength": "",
+        "minItems": "",
+        "maxItems": "",
+        "minimum": "",
+        "maximum": "",
+        "uniqueItems": false
+      }
+settings: {}
+order: 10000

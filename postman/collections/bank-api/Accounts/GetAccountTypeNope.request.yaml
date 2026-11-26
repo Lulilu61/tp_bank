@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/api/accounts?type=nope"
+method: GET
+queryParams:
+  - key: type
+    value: nope
+    $type: |-
+      {
+        "type": "",
+        "format": "",
+        "required": false,
+        "deprecated": false,
+        "default": "",
+        "enum": [],
+        "pattern": "",
+        "minLength": "",
+        "maxLength": "",
+        "minItems": "",
+        "maxItems": "",
+        "minimum": "",
+        "maximum": "",
+        "uniqueItems": false
+      }
+settings: {}
+order: 9000

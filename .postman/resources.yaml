@@ -1,0 +1,14 @@
+# Use this workspace to collaborate
+workspace:
+  id: 0c94fb38-e52b-439b-80f9-8ca7f7cc264f
+
+localResources:
+  specs:
+    - ../back/openapi.json
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+cloudResources:
+  collections:
+    ../postman/collections/bank-api: 31156672-14570a2e-fb69-4dcf-9bed-4abd940ed06c
+  environments:
+    ../postman/environments/SupDeVinci-B3.environment.yaml: 31156672-fe939b91-d15c-45c6-ba53-de537df1e4d0

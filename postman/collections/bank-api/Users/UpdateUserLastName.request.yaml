@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/users/{{userId}}"
+method: PATCH
+body:
+  type: json
+  content: "{\r
+
+    \    \"lastName\": \"Noceda\"\r
+
+    }"
+settings: {}
+order: 10000

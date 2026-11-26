@@ -1,0 +1,28 @@
+$kind: http-request
+url: "{{baseUrl}}/api/accounts"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"userId\": \"6ae9c67b2a150c01fbfd6045\",\r
+
+    \  \"iban\": \"BI00BONESBOROUGH0006\",\r
+
+    \  \"type\": \"checking\",\r
+
+    \  \"label\": \"Main account\",\r
+
+    \  \"balanceCents\": 0\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "if (pm.response.code === 201) {\r
+
+      \  pm.collectionVariables.set('accountId', pm.response.json()._id);\r
+
+      }"
+    language: text/javascript
+settings: {}
+order: 1000

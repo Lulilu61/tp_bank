@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{baseUrl}}/api/users"
+method: POST
+body:
+  type: json
+  content: ""
+settings: {}
+order: 5000

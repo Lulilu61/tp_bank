@@ -1,0 +1,7 @@
+name: SupDeVinci-B3
+values:
+  - key: current_token
+    value: ""
+    disabled: true
+  - key: current_token
+    value: ""

@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{baseUrl}}/api/accounts/{{accountId}}"
+method: PATCH
+body:
+  type: json
+  content: '{ "label": "Savings for holidays" }'
+settings: {}
+order: 17000

@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{baseUrl}}/api/health"
+method: GET
+auth:
+  type: noauth
+settings: {}
+order: 4000
