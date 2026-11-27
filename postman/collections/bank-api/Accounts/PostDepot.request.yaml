@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{baseUrl}}/api/accounts/{{accountId}}/deposits"
+method: POST
+body:
+  type: json
+  content: '{ "amountCents": 5000, "source": "counter" }'
+order: 22000

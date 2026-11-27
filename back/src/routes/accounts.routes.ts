@@ -7,12 +7,14 @@ import { validateObjectId } from '../middlewares/validate-object-id.ts';
 import type { BankAccount } from '../models/bank-account.model.ts';
 import { BankAccountModel } from '../models/bank-account.model.ts';
 import { UserModel } from '../models/user.model.ts';
+import { deposit } from '../services/account-operations.service.ts';
 import {
   parseAccountFilter,
   parseCreateAccount,
   parseLookup,
   parseUpdateAccount,
 } from '../validation/bank-account.validation.ts';
+import { parseDeposit } from '../validation/transaction.validation.ts';
 
 export const accountsRouter = Router();
 
@@ -84,6 +86,21 @@ accountsRouter.post('/', async (req, res) => {
 
   const account = await BankAccountModel.create(input);
   res.status(201).json(account);
+});
+
+// POST /api/accounts/:id/deposits
+accountsRouter.post('/:id/deposits', async (req, res) => {
+  const input = parseDeposit(req.body);
+
+  // Ownership is checked before any write
+  const account = await BankAccountModel.findById(req.params.id);
+  if (!account) {
+    throw new HttpError(404, 'Account not found');
+  }
+  assertAccountOwner(account, req);
+
+  const updated = await deposit(req.params.id, input.amountCents, input.source);
+  res.status(201).json(updated);
 });
 
 // PATCH /api/accounts/:id

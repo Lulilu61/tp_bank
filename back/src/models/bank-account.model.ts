@@ -42,7 +42,6 @@ const bankAccountSchema = new Schema<BankAccount>(
       default: 0,
       min: [0, 'balanceCents must be positive or zero'],
       validate: { validator: Number.isInteger, message: 'balanceCents must be an integer' },
-      immutable: true,
     },
   },
   { timestamps: true, versionKey: false },
