@@ -6,11 +6,11 @@ variables:
   - key: userId
     value: ""
     disabled: false
-  - key: accountId
-    value: ""
-    disabled: false
   - key: token
     secret: true
+    disabled: false
+  - key: accountId
+    value: ""
     disabled: false
 auth:
   - id: fc875ace-36f9-47de-bc2e-308171e96493

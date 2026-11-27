@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{baseUrl}}/api/accounts/{{accountId}}{/withdrawals"
+method: POST
+body:
+  type: json
+  content: '{ "amountCents": 1000 }'
+order: 23000

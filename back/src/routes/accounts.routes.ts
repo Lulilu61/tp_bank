@@ -7,14 +7,14 @@ import { validateObjectId } from '../middlewares/validate-object-id.ts';
 import type { BankAccount } from '../models/bank-account.model.ts';
 import { BankAccountModel } from '../models/bank-account.model.ts';
 import { UserModel } from '../models/user.model.ts';
-import { deposit } from '../services/account-operations.service.ts';
+import { deposit, withdraw } from '../services/account-operations.service.ts';
 import {
   parseAccountFilter,
   parseCreateAccount,
   parseLookup,
   parseUpdateAccount,
 } from '../validation/bank-account.validation.ts';
-import { parseDeposit } from '../validation/transaction.validation.ts';
+import { parseDeposit, parseWithdrawal } from '../validation/transaction.validation.ts';
 
 export const accountsRouter = Router();
 
@@ -101,6 +101,20 @@ accountsRouter.post('/:id/deposits', async (req, res) => {
 
   const updated = await deposit(req.params.id, input.amountCents, input.source);
   res.status(201).json(updated);
+});
+
+// POST /api/accounts/:id/withdrawals
+accountsRouter.post('/:id/withdrawals', async (req, res) => {
+  const input = parseWithdrawal(req.body);
+
+  const account = await BankAccountModel.findById(req.params.id);
+  if (!account) {
+    throw new HttpError(404, 'Account not found');
+  }
+  assertAccountOwner(account, req);
+
+  const updated = await withdraw(req.params.id, input.amountCents);
+  res.status(200).json(updated);
 });
 
 // PATCH /api/accounts/:id
